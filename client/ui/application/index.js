@@ -5,7 +5,9 @@ import { getData } from 'ducks/application/selectors'
 import { fetchMyData } from 'ducks/application/actions'
 import { useBindedAction } from 'utils/hooks'
 
+import img from 'images/png/client.png'
 import 'stylesheets/styles'
+import './styles'
 
 const ChildComponent = () => {
   console.log('rendering...')
@@ -35,8 +37,14 @@ const Application = () => {
   return (
     <div>
       <span>{counter}</span>
-      <button onClick={() => setCounter(counter + 1)}>Increase!</button>
+
+      <button className="controller" onClick={() => setCounter(counter + 1)}>
+        Increase!
+      </button>
+
       <NewChildComponent callback={fetchData} />
+
+      <img src={img} alt="client" />
     </div>
   )
 }

@@ -5,7 +5,8 @@ import { composeWithDevTools } from 'redux-devtools-extension'
 import reducers from 'ducks'
 
 const middleware = applyMiddleware(thunk)
-const enhancers = process.env.DEVELOPMENT
+const isBrowserDevelopment = process.env.BROWSER && process.env.DEVELOPMENT
+const enhancers = isBrowserDevelopment
   ? composeWithDevTools(middleware)
   : middleware
 

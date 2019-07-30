@@ -1,19 +1,30 @@
+const path = require('path')
 const webpack = require('webpack')
 const merge = require('webpack-merge')
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const { CleanWebpackPlugin } = require('clean-webpack-plugin')
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const CopyPlugin = require('copy-webpack-plugin')
 
 const common = require('./webpack.common')
 
 const plugins = [
-  new CleanWebpackPlugin(),
-  new MiniCssExtractPlugin({
-    filename: '[name].[hash].css',
-  }),
   new webpack.DefinePlugin({
-    'process.env.DEVELOPMENT': false,
+    'process.env.BROWSER': true,
+    DEVELOPMENT: false,
+  }),
+  new MiniCssExtractPlugin({
+    filename: 'styles.css',
+  }),
+  new CopyPlugin([
+    { from: 'public/index.mustache', to: '.' },
+    { from: 'public/favicon.ico', to: '.' },
+    { from: 'public/locales', to: '../locales' },
+  ]),
+]
+
+const pluginsForServerside = [
+  new webpack.DefinePlugin({
+    'process.env.BROWSER': false,
+    DEVELOPMENT: false,
   }),
 ]
 
@@ -22,16 +33,76 @@ const cssLoader = {
   use: [MiniCssExtractPlugin.loader],
 }
 
-module.exports = merge.smart(
-  {
-    mode: 'production',
-    module: {
-      rules: [cssLoader],
-    },
-    plugins,
-    optimization: {
-      minimizer: [new UglifyJsPlugin(), new OptimizeCSSAssetsPlugin({})],
+const fontLoader = {
+  test: /\.(eot|otf|ttf|woff|woff2)(\?.*)?$/i,
+  use: {
+    loader: 'file-loader',
+    options: {
+      name: '[name].[ext]',
+      outputPath: 'fonts',
+      publicPath: '/assets/fonts',
     },
   },
-  common,
-)
+}
+
+const imageLoader = {
+  test: /\.(ico|jpg|jpeg|png|gif|webp|svg)(\?.*)?$/,
+  use: {
+    loader: 'file-loader',
+    options: {
+      name: '[name].[ext]',
+      outputPath: 'images',
+      publicPath: '/assets/images',
+    },
+  },
+}
+
+const miscLoader = {
+  exclude: [
+    /\.html$/,
+    /\.(js|jsx)$/,
+    /\.s?css$/,
+    /\.json$/,
+    /\.svg$/,
+    /\.png$/,
+  ],
+  use: {
+    loader: 'null-loader',
+  },
+}
+
+module.exports = [
+  merge.smart(
+    {
+      mode: 'production',
+      target: 'web',
+      entry: ['babel-polyfill', path.join(__dirname, 'src/application.js')],
+      output: {
+        path: path.join(__dirname, 'dist/assets'),
+        filename: 'application.js',
+      },
+      plugins,
+      module: { rules: [cssLoader, fontLoader, imageLoader] },
+    },
+    common,
+  ),
+  merge.smart(
+    {
+      mode: 'production',
+      target: 'node',
+      entry: [
+        'babel-polyfill',
+        path.join(__dirname, 'src/serverside/index.js'),
+      ],
+      output: {
+        path: path.join(__dirname, 'dist/assets'),
+        filename: 'serverside.application.js',
+        library: 'jsx',
+        libraryTarget: 'umd',
+      },
+      plugins: pluginsForServerside,
+      module: { rules: [imageLoader, miscLoader] },
+    },
+    common,
+  ),
+]

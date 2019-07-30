@@ -3,34 +3,40 @@ const webpack = require('webpack')
 const merge = require('webpack-merge')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
 const common = require('./webpack.common')
 
-const plugins = [
+const pluginsForClientside = [
   new webpack.DefinePlugin({
     'process.env.BROWSER': true,
-    DEVELOPMENT: false,
+    'process.env.DEVELOPMENT': false,
   }),
   new MiniCssExtractPlugin({
     filename: 'styles.css',
   }),
   new CopyPlugin([
-    { from: 'public/index.mustache', to: '.' },
-    { from: 'public/favicon.ico', to: '.' },
-    { from: 'public/locales', to: '../locales' },
+    { from: 'public/application.mustache', to: '.' },
+    { from: 'robots.txt', to: '..' },
   ]),
 ]
 
 const pluginsForServerside = [
   new webpack.DefinePlugin({
     'process.env.BROWSER': false,
-    DEVELOPMENT: false,
+    'process.env.DEVELOPMENT': false,
   }),
 ]
 
 const cssLoader = {
   test: /\.(s)?css$/,
-  use: [MiniCssExtractPlugin.loader],
+  use: [
+    { loader: MiniCssExtractPlugin.loader },
+    { loader: 'css-loader' },
+    { loader: 'postcss-loader' },
+    { loader: 'sass-loader' },
+  ],
 }
 
 const fontLoader = {
@@ -45,7 +51,7 @@ const fontLoader = {
   },
 }
 
-const imageLoader = {
+const imageLoaderForClientside = {
   test: /\.(ico|jpg|jpeg|png|gif|webp|svg)(\?.*)?$/,
   use: {
     loader: 'file-loader',
@@ -57,18 +63,27 @@ const imageLoader = {
   },
 }
 
-const miscLoader = {
-  exclude: [
-    /\.html$/,
-    /\.(js|jsx)$/,
-    /\.s?css$/,
-    /\.json$/,
-    /\.svg$/,
-    /\.png$/,
-  ],
+const imageLoaderForServerside = {
+  test: /\.(ico|jpg|jpeg|png|gif|webp|svg)(\?.*)?$/,
+  use: {
+    loader: 'file-loader',
+    options: {
+      name: '[name].[ext]',
+      publicPath: '/assets/images',
+      emitFile: false,
+    },
+  },
+}
+
+const nullLoader = {
+  test: /\.(s?css)$/,
   use: {
     loader: 'null-loader',
   },
+}
+
+const optimization = {
+  minimizer: [new UglifyJsPlugin(), new OptimizeCSSAssetsPlugin({})],
 }
 
 module.exports = [
@@ -76,13 +91,14 @@ module.exports = [
     {
       mode: 'production',
       target: 'web',
-      entry: ['babel-polyfill', path.join(__dirname, 'src/application.js')],
+      entry: ['babel-polyfill', path.join(__dirname, 'client/clientside.js')],
       output: {
-        path: path.join(__dirname, 'dist/assets'),
+        path: path.join(__dirname, 'build/assets'),
         filename: 'application.js',
       },
-      plugins,
-      module: { rules: [cssLoader, fontLoader, imageLoader] },
+      plugins: pluginsForClientside,
+      optimization,
+      module: { rules: [cssLoader, fontLoader, imageLoaderForClientside] },
     },
     common,
   ),
@@ -90,18 +106,16 @@ module.exports = [
     {
       mode: 'production',
       target: 'node',
-      entry: [
-        'babel-polyfill',
-        path.join(__dirname, 'src/serverside/index.js'),
-      ],
+      entry: ['babel-polyfill', path.join(__dirname, 'client/serverside.js')],
       output: {
-        path: path.join(__dirname, 'dist/assets'),
+        path: path.join(__dirname, 'build/assets'),
         filename: 'serverside.application.js',
         library: 'jsx',
         libraryTarget: 'umd',
       },
       plugins: pluginsForServerside,
-      module: { rules: [imageLoader, miscLoader] },
+      optimization,
+      module: { rules: [imageLoaderForServerside, nullLoader] },
     },
     common,
   ),

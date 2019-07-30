@@ -8,6 +8,7 @@ import config from 'config'
 
 import rendererMiddleware from './middleware/renderer'
 import sourcesMiddleware from './middleware/sources'
+import { handleRobots } from './controllers/robots'
 import { handleApplication } from './controllers/application'
 import { handleError } from './controllers/error'
 import * as routes from './routes'
@@ -21,6 +22,7 @@ const webpackCompiler = webpack(webpackConfig)
 
 const assetsPath = isDevelopment ? '../public/assets' : './assets'
 const viewsPath = isDevelopment ? '../public' : './assets'
+const robotsPath = isDevelopment ? '../robots.txt' : './robots.txt'
 
 app.engine('mustache', mustacheExpress())
 
@@ -41,6 +43,7 @@ app.use(morgan(morganMode))
 app.use(rendererMiddleware)
 app.use(sourcesMiddleware)
 
+app.use(handleRobots(path.resolve(__dirname, robotsPath)))
 app.use('/assets', express.static(path.resolve(__dirname, assetsPath)))
 app.use('/api', routes.api)
 app.use(handleApplication)

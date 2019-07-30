@@ -5,7 +5,8 @@ import { getData } from 'ducks/application/selectors'
 import { fetchMyData } from 'ducks/application/actions'
 import { useBindedAction } from 'utils/hooks'
 
-import img from 'images/png/client.png'
+import pngIcon from 'images/png/client.png'
+import webpIcon from 'images/webp/client.webp'
 import 'stylesheets/styles'
 import './styles'
 
@@ -44,7 +45,10 @@ const Application = () => {
 
       <NewChildComponent callback={fetchData} />
 
-      <img src={img} alt="client" />
+      <picture>
+        <source srcSet={webpIcon} type="image/webp"></source>
+        <img src={pngIcon} alt="client" />
+      </picture>
     </div>
   )
 }

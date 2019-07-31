@@ -11,5 +11,5 @@ export const fetchMyData = () => dispatch => {
     apiMethod: api.fetchData,
   }
 
-  dispatch(fetchData(config))
+  return dispatch(fetchData(config))
 }

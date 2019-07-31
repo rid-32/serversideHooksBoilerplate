@@ -5,26 +5,27 @@ import { StaticRouter } from 'react-router-dom'
 
 import Application from 'ui/application'
 
-import store from 'utils/store'
+import store, { hydrateStore } from 'utils/store'
 
-const renderApplication = ({ url }) =>
-  new Promise((res, rej) => {
-    const context = {}
-    const initialState = store.getState()
+const renderApplication = async ({ url }) => {
+  await hydrateStore()
 
-    const applicationMarkup = renderToString(
-      <Provider store={store}>
-        <StaticRouter location={url} context={context}>
-          <Application />
-        </StaticRouter>
-      </Provider>,
-    )
+  const context = {}
+  const initialState = store.getState()
 
-    if (context.url) {
-      return rej(context.url)
-    }
+  const applicationMarkup = renderToString(
+    <Provider store={store}>
+      <StaticRouter location={url} context={context}>
+        <Application />
+      </StaticRouter>
+    </Provider>,
+  )
 
-    return res({ applicationMarkup, initialState })
-  })
+  if (context.url) {
+    throw Error(context.url)
+  }
+
+  return { applicationMarkup, initialState }
+}
 
 export default renderApplication

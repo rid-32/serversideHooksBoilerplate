@@ -11,11 +11,15 @@
     <meta name="description" content="description">
     <meta name="keywords" content="meta tags">
 
+    <script async type="application/javascript" src={{scriptSource}}></script>
+
     {{#stylesSource}}
       <link rel="stylesheet" href={{stylesSource}}>
     {{/stylesSource}}
 
-    <script async type="application/javascript" src={{scriptSource}}></script>
+    <script type="application/javascript">
+      window.__initialState__ = {{&initialState}};
+    </script>
   </head>
 
   <body>

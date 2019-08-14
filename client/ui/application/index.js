@@ -3,8 +3,6 @@ import { renderRoutes } from 'react-router-config'
 
 import routes from 'configuration/routes'
 
-import 'stylesheets/styles'
-
 const Application = () => {
   console.log('application rendering...')
 

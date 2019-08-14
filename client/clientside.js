@@ -8,6 +8,9 @@ import history from 'utils/history'
 
 import Application from 'ui/application'
 
+import 'normalize.css'
+import 'stylesheets/styles'
+
 ReactDOM.render(
   <Provider store={store}>
     <Router history={history}>

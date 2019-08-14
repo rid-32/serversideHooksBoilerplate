@@ -12,7 +12,6 @@ const plugins = [
     'process.env.BROWSER': true,
     'process.env.DEVELOPMENT': true,
   }),
-  new webpack.HotModuleReplacementPlugin(),
 ]
 
 const cssLoader = {

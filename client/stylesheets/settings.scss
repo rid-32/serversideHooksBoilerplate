@@ -1,7 +1,11 @@
-html {
-  /* Breakpoints */
-  --screenXs: 480px;
-  --screenSm: 768px;
-  --screenMd: 992px;
-  --screenLg: 1200px;
-}
+/* Breakpoints */
+
+$screenXs: 480px;
+$screenSm: 768px;
+$screenMd: 992px;
+$screenLg: 1200px;
+
+/* Color */
+
+$white: #fff;
+$black: #000;
